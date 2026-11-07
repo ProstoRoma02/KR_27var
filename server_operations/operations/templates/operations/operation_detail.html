@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="operation-detail-page">
+    <nav class="breadcrumb">
+        <a href="{% url 'operations:operation_list' %}"><i class="fas fa-arrow-left"></i> Назад к списку операций</a>
+    </nav>
+
+    <div class="operation-detail">
+        <div class="operation-header">
+            <h2>{{ operation.title }}</h2>
+            <div class="operation-meta">
+                <span class="operation-slug">Slug: {{ operation.slug }}</span>
+                <span class="operation-id">ID: {{ operation.id }}</span>
+            </div>
+        </div>
+
+        <div class="operation-content">
+            <div class="operation-info">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> Основная информация</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Тип операции:</span>
+                            <span class="info-value">{{ operation.op_type|upper }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Дата начала:</span>
+                            <span class="info-value">{{ operation.start_date|date:"d.m.Y H:i" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Продолжительность:</span>
+                            <span class="info-value">{{ operation.duration }} минут</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Количество узлов:</span>
+                            <span class="info-value">{{ operation.nodes }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-server"></i> Информация о стойке</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Название стойки:</span>
+                            <span class="info-value">{{ operation.rack_name|default:"Стойка не указана" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Вместимость:</span>
+                            <span class="info-value">{{ operation.capacity|default:"Неизвестно" }} юнитов</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Тип стойки:</span>
+                            <span class="info-value">{{ operation.rack_kind|default:"Не указан"|capfirst }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">ID стойки:</span>
+                            <span class="info-value">{{ operation.rack_id|default:"Не указан" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card status-card">
+                    <h3><i class="fas fa-tasks"></i> Статус операции</h3>
+                    <div class="status-display">
+                        {% if operation.status == 'запланирована' %}
+                            <div class="status-indicator status-planned">
+                                <i class="fas fa-calendar-check"></i>
+                                <div class="status-content">
+                                    <h4>План работ</h4>
+                                    <p>Операция запланирована на {{ operation.start_date|date:"d.m.Y" }}</p>
+                                </div>
+                            </div>
+                        {% elif operation.status == 'выполняется' %}
+                            <div class="status-indicator status-in-progress">
+                                <i class="fas fa-tools"></i>
+                                <div class="status-content">
+                                    <h4>Идут работы</h4>
+                                    <p>Операция выполняется в данный момент</p>
+                                </div>
+                            </div>
+                        {% elif operation.status == 'выполнена' %}
+                            <div class="status-indicator status-completed">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="status-content">
+                                    <h4>Работы завершены</h4>
+                                    <p>Операция успешно выполнена</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="status-indicator status-unknown">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="status-content">
+                                    <h4>{{ operation.status }}</h4>
+                                    <p>Статус операции</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="operation-technical">
+                <div class="technical-card">
+                    <h3><i class="fas fa-database"></i> Техническая информация</h3>
+                    <div class="sql-info">
+                        <h4>Использованный SQL-запрос:</h4>
+                        <pre><code>SELECT 
+    o.*, 
+    r.name as rack_name, 
+    r.capacity, 
+    r.rack_kind
+FROM operations o
+LEFT JOIN racks r ON o.rack_id = r.id
+WHERE o.slug = '{{ operation.slug }}'</code></pre>
+                        
+                        <h4>Данные из SQLite:</h4>
+                        <div class="data-grid">
+                            <div class="data-item">
+                                <span class="data-label">Тип данных:</span>
+                                <span class="data-value">SQLite через sqlite3</span>
+                            </div>
+                            <div class="data-item">
+                                <span class="data-label">Связь таблиц:</span>
+                                <span class="data-value">LEFT JOIN operations ↔ racks</span>
+                            </div>
+                            <div class="data-item">
+                                <span class="data-label">Параметр запроса:</span>
+                                <span class="data-value">slug='{{ operation.slug }}'</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="operation-actions">
+            <a href="{% url 'operations:operation_list' %}" class="btn btn-outline">
+                <i class="fas fa-list"></i> К списку операций
+            </a>
+            <a href="{% url 'operations:statistics' %}" class="btn btn-outline">
+                <i class="fas fa-chart-bar"></i> Статистика
+            </a>
+            <button onclick="window.print()" class="btn btn-outline">
+                <i class="fas fa-print"></i> Печать
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

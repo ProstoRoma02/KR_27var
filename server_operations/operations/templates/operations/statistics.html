@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="statistics-page">
+    <div class="page-header">
+        <h2>{{ title }}</h2>
+        <p class="lead">Статистические данные по операциям технического обслуживания. Используются SQL-запросы с GROUP BY, COUNT и HAVING.</p>
+    </div>
+
+    {% if statistics %}
+        <div class="stats-grid">
+            {% for stat in statistics %}
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <h3>{{ stat.op_type|capfirst }}</h3>
+                        <span class="stat-count">{{ stat.count }} операций</span>
+                    </div>
+                    
+                    <div class="stat-body">
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Средняя длительность:</span>
+                                <span class="stat-value">{{ stat.avg_duration }} мин</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Всего узлов:</span>
+                                <span class="stat-value">{{ stat.total_nodes }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Выполнено:</span>
+                                <span class="stat-value">{{ stat.completed_count }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-icon">
+                                <i class="fas fa-percentage"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Доля от общего:</span>
+                                <span class="stat-value">
+                                    {% widthratio stat.count total_count 100 %}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="total-stats">
+            <div class="total-card">
+                <h3><i class="fas fa-chart-pie"></i> Общая статистика</h3>
+                <div class="total-grid">
+                    <div class="total-item">
+                        <div class="total-value">{{ total_count }}</div>
+                        <div class="total-label">Всего операций</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-value">{{ avg_duration|default:"0" }} мин</div>
+                        <div class="total-label">Средняя длительность</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-value">{{ total_nodes }}</div>
+                        <div class="total-label">Всего узлов</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sql-info">
+            <h3><i class="fas fa-database"></i> SQL-запросы для статистики</h3>
+            
+            <div class="sql-examples">
+                <div class="sql-example">
+                    <h4>Основной запрос (используется на этой странице):</h4>
+                    <pre><code>SELECT 
+    op_type,
+    COUNT(*) as count,
+    AVG(duration) as avg_duration,
+    SUM(nodes) as total_nodes,
+    SUM(CASE WHEN status = 'выполнена' THEN 1 ELSE 0 END) as completed_count
+FROM operations
+GROUP BY op_type
+HAVING COUNT(*) > 0
+ORDER BY count DESC</code></pre>
+                    <p class="sql-explanation">
+                        <strong>GROUP BY op_type</strong> — группировка по типу операции<br>
+                        <strong>COUNT(*)</strong> — подсчет количества операций в каждой группе<br>
+                        <strong>HAVING COUNT(*) > 0</strong> — фильтрация групп (только те типы, у которых есть операции)<br>
+                        <strong>ORDER BY count DESC</strong> — сортировка по количеству операций по убыванию
+                    </p>
+                </div>
+                
+                <div class="sql-example">
+                    <h4>Другие статистические запросы:</h4>
+                    <div class="query-grid">
+                        <div class="query-item">
+                            <h5>Статистика по статусам</h5>
+                            <code>SELECT status, COUNT(*) FROM operations GROUP BY status</code>
+                        </div>
+                        <div class="query-item">
+                            <h5>Операции по стойкам</h5>
+                            <code>SELECT r.name, COUNT(o.id) FROM racks r LEFT JOIN operations o ON r.id = o.rack_id GROUP BY r.id</code>
+                        </div>
+                        <div class="query-item">
+                            <h5>Среднее по узлам</h5>
+                            <code>SELECT AVG(nodes) as avg_nodes FROM operations</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="data-actions">
+            <div class="action-card">
+                <h3><i class="fas fa-sync-alt"></i> Проверка актуальности данных</h3>
+                <p>Все данные на этой странице получены непосредственно из базы данных SQLite в момент обращения к странице.</p>
+                <p>Если вы измените данные в таблице <code>operations</code> через SQLite, обновите эту страницу, чтобы увидеть актуальную статистику.</p>
+                <button onclick="location.reload()" class="btn btn-primary">
+                    <i class="fas fa-redo"></i> Обновить страницу
+                </button>
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-chart-bar fa-3x"></i>
+            <h3>Статистика недоступна</h3>
+            <p>Нет данных для отображения статистики. Возможно, база данных пуста.</p>
+            <a href="{% url 'homepage:home' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> На главную
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

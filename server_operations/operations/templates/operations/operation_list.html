@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="operations-page">
+    <div class="page-header">
+        <h2>{{ title }}</h2>
+        <p class="lead">Список операций технического обслуживания серверов. Данные получены из SQLite через SQL-запросы с фильтрацией и сортировкой.</p>
+    </div>
+
+    <div class="filters-section">
+        <div class="filter-card">
+            <h3><i class="fas fa-filter"></i> Фильтры и сортировка</h3>
+            
+            <form method="get" action="{% url 'operations:operation_list' %}" class="filter-form">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nodes"><i class="fas fa-cube"></i> Минимальное количество узлов</label>
+                        <input type="number" id="nodes" name="nodes" value="{{ filter_nodes|default:'' }}" 
+                               min="1" max="20" placeholder="Например: 2">
+                        <small class="form-text">GET-фильтрация через параметризованный SQL-запрос</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="limit"><i class="fas fa-list-ol"></i> Ограничение выборки (LIMIT)</label>
+                        <input type="number" id="limit" name="limit" value="{{ filter_limit|default:'' }}" 
+                               min="1" max="100" placeholder="Например: 5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="order_by"><i class="fas fa-sort"></i> Сортировать по</label>
+                        <select id="order_by" name="order_by">
+                            <option value="start_date" {% if filter_order_by == 'start_date' %}selected{% endif %}>Дата</option>
+                            <option value="duration" {% if filter_order_by == 'duration' %}selected{% endif %}>Длительность</option>
+                            <option value="nodes" {% if filter_order_by == 'nodes' %}selected{% endif %}>Количество узлов</option>
+                            <option value="title" {% if filter_order_by == 'title' %}selected{% endif %}>Название</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="order_direction"><i class="fas fa-sort-amount-down"></i> Направление</label>
+                        <select id="order_direction" name="order_direction">
+                            <option value="DESC" {% if filter_order_direction == 'DESC' %}selected{% endif %}>По убыванию</option>
+                            <option value="ASC" {% if filter_order_direction == 'ASC' %}selected{% endif %}>По возрастанию</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Применить фильтры
+                    </button>
+                    <a href="{% url 'operations:operation_list' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="results-section">
+        <div class="results-header">
+            <h3>Результаты</h3>
+            <p class="results-count">
+                Найдено операций: <strong>{{ total_count }}</strong>
+                {% if filter_nodes %}
+                    (фильтр по узлам: ≥ {{ filter_nodes }})
+                {% endif %}
+                {% if filter_limit %}
+                    (ограничение: {{ filter_limit }} записей)
+                {% endif %}
+            </p>
+        </div>
+
+        {% if operations %}
+            <div class="operations-grid">
+                {% for operation in operations %}
+                    {% include 'operations/includes/operation_card.html' with operation=operation %}
+                {% endfor %}
+            </div>
+            
+            <div class="sql-info">
+                <h4><i class="fas fa-database"></i> SQL-запросы в действии:</h4>
+                <div class="sql-snippets">
+                    <div class="sql-snippet">
+                        <h5>Базовый запрос:</h5>
+                        <code>SELECT o.*, r.name as rack_name FROM operations o LEFT JOIN racks r ON o.rack_id = r.id</code>
+                    </div>
+                    {% if filter_nodes %}
+                    <div class="sql-snippet">
+                        <h5>Фильтрация (GET-параметр nodes={{ filter_nodes }}):</h5>
+                        <code>WHERE o.nodes >= ?  -- параметризованный запрос для безопасности</code>
+                    </div>
+                    {% endif %}
+                    {% if filter_limit %}
+                    <div class="sql-snippet">
+                        <h5>Ограничение выборки (LIMIT {{ filter_limit }}):</h5>
+                        <code>LIMIT ?</code>
+                    </div>
+                    {% endif %}
+                    <div class="sql-snippet">
+                        <h5>Сортировка (ORDER BY):</h5>
+                        <code>ORDER BY o.{{ filter_order_by }} {{ filter_order_direction }}</code>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tools fa-3x"></i>
+                <h3>Операции не найдены</h3>
+                <p>Нет операций, соответствующих заданным фильтрам.</p>
+                {% if filter_nodes %}
+                    <p>Попробуйте уменьшить минимальное количество узлов.</p>
+                {% endif %}
+                <a href="{% url 'operations:operation_list' %}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Показать все операции
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

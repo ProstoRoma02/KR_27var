@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="racks-page">
+    <div class="page-header">
+        <h2>{{ title }}</h2>
+        <p class="lead">Информация о серверных стойках. Данные получены из SQLite через SQL-запрос.</p>
+    </div>
+
+    {% if racks %}
+        <div class="racks-grid">
+            {% for rack in racks %}
+                <div class="rack-card">
+                    <div class="rack-header">
+                        <h3>{{ rack.1|default:"Без названия" }}</h3>
+                        <span class="rack-kind">{{ rack.3|upper }}</span>
+                    </div>
+                    
+                    <div class="rack-details">
+                        <div class="detail-item">
+                            <i class="fas fa-arrows-alt-v"></i>
+                            <span class="detail-label">Вместимость:</span>
+                            <span class="detail-value">{{ rack.2 }} юнитов</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <i class="fas fa-hashtag"></i>
+                            <span class="detail-label">ID стойки:</span>
+                            <span class="detail-value">#{{ rack.0 }}</span>
+                        </div>
+                        
+                        <div class="detail-item">
+                            <i class="fas fa-cogs"></i>
+                            <span class="detail-label">Назначение:</span>
+                            <span class="detail-value">{{ rack.3|capfirst }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="rack-actions">
+                        <a href="{% url 'operations:operation_list' %}?filter_rack={{ rack.0 }}" class="btn btn-outline">
+                            <i class="fas fa-tools"></i> Операции этой стойки
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="stats-summary">
+            <p>Всего стоек: <strong>{{ racks|length }}</strong></p>
+            <p>Общая вместимость: <strong>{{ total_capacity }} юнитов</strong></p>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-server fa-3x"></i>
+            <h3>Стойки не найдены</h3>
+            <p>В базе данных SQLite нет информации о стойках.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

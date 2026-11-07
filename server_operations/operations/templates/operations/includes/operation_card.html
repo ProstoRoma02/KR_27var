@@ -1,0 +1,80 @@
+{% load static %}
+
+<div class="operation-card" data-operation-id="{{ operation.id }}">
+    <div class="operation-header">
+        <h3 class="operation-title">
+            <a href="{% url 'operations:operation_detail' slug=operation.slug %}">
+                {{ operation.title|truncatechars:30 }}
+            </a>
+        </h3>
+        <span class="operation-type">{{ operation.op_type|upper }}</span>
+    </div>
+    
+    <div class="operation-body">
+        <div class="operation-details">
+            <div class="detail-row">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="detail-label">Дата:</span>
+                <span class="detail-value">{{ operation.start_date|date:"d.m.Y H:i" }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <i class="fas fa-clock"></i>
+                <span class="detail-label">Длительность:</span>
+                <span class="detail-value">{{ operation.duration }} мин</span>
+            </div>
+            
+            <div class="detail-row">
+                <i class="fas fa-cube"></i>
+                <span class="detail-label">Узлов:</span>
+                <span class="detail-value">{{ operation.nodes }}</span>
+            </div>
+            
+            <div class="detail-row">
+                <i class="fas fa-server"></i>
+                <span class="detail-label">Стойка:</span>
+                <span class="detail-value">{{ operation.rack_name|default:"Стойка не указана" }}</span>
+            </div>
+        </div>
+        
+        <div class="operation-status">
+            {% if operation.status == 'запланирована' %}
+                <span class="status-badge status-planned">
+                    <i class="fas fa-calendar-check"></i> План работ
+                </span>
+            {% elif operation.status == 'выполняется' %}
+                <span class="status-badge status-in-progress">
+                    <i class="fas fa-tools"></i> Идут работы
+                </span>
+            {% elif operation.status == 'выполнена' %}
+                <span class="status-badge status-completed">
+                    <i class="fas fa-check-circle"></i> Работы завершены
+                </span>
+            {% else %}
+                <span class="status-badge status-unknown">
+                    <i class="fas fa-question-circle"></i> {{ operation.status }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="operation-footer">
+        <a href="{% url 'operations:operation_detail' slug=operation.slug %}" class="btn btn-small">
+            <i class="fas fa-eye"></i> Подробнее
+        </a>
+        <button class="btn btn-small btn-outline toggle-details" data-operation-id="{{ operation.id }}">
+            <i class="fas fa-info-circle"></i> Детали
+        </button>
+    </div>
+    
+    <div class="operation-extra" id="extra-{{ operation.id }}" style="display: none;">
+        <div class="extra-content">
+            <h4>Дополнительная информация</h4>
+            <p><strong>Slug:</strong> {{ operation.slug }}</p>
+            <p><strong>ID:</strong> {{ operation.id }}</p>
+            <p><strong>ID стойки:</strong> {{ operation.rack_id|default:"Не указан" }}</p>
+            <p><strong>Вместимость стойки:</strong> {{ operation.capacity|default:"Неизвестно" }} юнитов</p>
+            <p><strong>Тип стойки:</strong> {{ operation.rack_kind|default:"Не указан" }}</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="homepage">
+    <div class="hero">
+        <h2>{{ title }}</h2>
+        <p class="lead">{{ description }}</p>
+    </div>
+
+    <div class="stats-card">
+        <div class="stat-item">
+            <i class="fas fa-tasks"></i>
+            <div class="stat-content">
+                <h3>Всего операций</h3>
+                <p class="stat-value">{{ total_operations|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-database"></i>
+            <div class="stat-content">
+                <h3>Данные из SQLite</h3>
+                <p class="stat-desc">Прямой доступ через sqlite3</p>
+            </div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-code"></i>
+            <div class="stat-content">
+                <h3>Django + SQL</h3>
+                <p class="stat-desc">Полный стек технологий</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <div class="feature-icon">
+                <i class="fas fa-list"></i>
+            </div>
+            <h3>Список операций</h3>
+            <p>Просмотр, фильтрация и сортировка всех операций технического обслуживания с использованием SQL-запросов и GET-параметров.</p>
+            <a href="{% url 'operations:operation_list' %}" class="btn btn-primary">Перейти к операциям</a>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <h3>Управление стойками</h3>
+            <p>Информация о серверных стойках: вместимость, назначение и связанные операции. Данные извлекаются напрямую из SQLite.</p>
+            <a href="{% url 'racks:rack_list' %}" class="btn btn-primary">Просмотр стоек</a>
+        </div>
+        
+        <div class="feature">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Статистика</h3>
+            <p>Аналитические данные по операциям с использованием SQL-запросов с GROUP BY и HAVING для группировки и фильтрации результатов.</p>
+            <a href="{% url 'operations:statistics' %}" class="btn btn-primary">Смотреть статистику</a>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3><i class="fas fa-info-circle"></i> О приложении</h3>
+        <p>Это Django-приложение демонстрирует полный цикл работы с данными:</p>
+        <ol>
+            <li><strong>SQLite → SQL → Python sqlite3 → Django view → context → Django templates → HTML/CSS/JavaScript</strong></li>
+            <li>Используются только SQL-запросы без Django ORM</li>
+            <li>Реализована фильтрация через GET-параметры</li>
+            <li>Поддержка сортировки и ограничения выборки с помощью ORDER BY и LIMIT</li>
+            <li>Обработка ошибок и корректные HTTP-ответы</li>
+            <li>Использование статических файлов и шаблонных фильтров Django</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

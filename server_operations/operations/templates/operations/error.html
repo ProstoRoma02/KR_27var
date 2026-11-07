@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-content">
+        <div class="error-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h2>{{ title }}</h2>
+        
+        <div class="error-message">
+            <p>{{ error_message|default:"Произошла ошибка при обработке вашего запроса" }}</p>
+        </div>
+        
+        <div class="error-details">
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Что произошло?</h3>
+                <p>При обращении к базе данных SQLite возникла ошибка. Это может быть связано с:</p>
+                <ul>
+                    <li>Проблемой подключения к файлу базы данных</li>
+                    <li>Ошибкой в SQL-запросе</li>
+                    <li>Отсутствием необходимой таблицы или записи</li>
+                </ul>
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-cogs"></i> Техническая информация</h3>
+                <p>Приложение использует прямой доступ к SQLite через модуль <code>sqlite3</code> Python.</p>
+                <p>Все запросы выполняются с обработкой исключений и параметризацией для безопасности.</p>
+            </div>
+        </div>
+        
+        <div class="error-actions">
+            <a href="{% url 'homepage:home' %}" class="btn btn-primary">
+                <i class="fas fa-home"></i> На главную
+            </a>
+            <a href="{% url 'operations:operation_list' %}" class="btn btn-outline">
+                <i class="fas fa-tools"></i> К списку операций
+            </a>
+            <button onclick="window.history.back()" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Назад
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
